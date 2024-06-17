@@ -1,0 +1,43 @@
+{%
+    with (workdir, trial_dir) = (
+        ("/var/workdir_" ~ trial),
+        ("./output/" ~ bench|default("debug") ~ "/" ~ fuzzer ~ "-" ~ mode ~ "/" ~ binary ~ "/" ~ trial),
+    )
+%}
+(
+instance: "hail-fuzz",
+vars: [
+    "TAG=v1;bench={{bench|default("debug")}};fuzzer={{fuzzer}};mode={{mode}};binary={{binary}};trial={{trial}}",
+    "ICICLE_LOG=info,hail_fuzz=debug,icicle_fuzzing=debug,cranelift_jit=warn,cranelift_codegen=warn",
+    "WORKDIR={{workdir}}",
+    "TARGET_CONFIG={{("fuzzer/targets/" ~ binary ~ "/" ~ config|default("config.yml"))}}",
+    "COVERAGE_MODE=blocks",
+
+{# Default config (all) is to enable all features, otherwise selectively disable features that are not set in the mode parameter. #}
+{% if not mode is startingwith("all") %}
+{% if not mode is containing("havoc") %}"ENABLE_HAVOC=0",{% endif %}
+{% if not mode is containing("trim") %}"ENABLE_AUTO_TRIM=0","ENABLE_TRIM=0",{% endif %}
+{% if not mode is containing("i2s") %}"ENABLE_CMPLOG=0",{% endif %}
+{% if not mode is containing("autodict") %}"ENABLE_AUTO_DICT=0",{% endif %}
+{% endif %}
+
+    {# Max number of hangs and crashes to save to avoid filling up the disk #}
+    "SAVE_HANG_LIMIT=0",
+    "SAVE_CRASH_LIMIT=200",
+],
+tasks: [
+    ExitIfExisting(path: "{{trial_dir}}"), {# Avoid accidently overwriting existing trials #}
+    Run(command: "mkdir -p {{workdir}}"),
+    SaveEnv(path: "{{workdir}}/env"),
+    Run(
+        command: "STATS_LOG_RATE=60.0 fuzzer/hail-fuzz",
+        duration: Some("{{duration}}"),
+        stdout: Some("{{workdir}}/fuzzer.stdout"),
+        stderr: Some("{{workdir}}/fuzzer.stderr"),
+    ),
+    CopyFile(src: "{{workdir}}/crashes.json", dst: "{{trial_dir}}/crashes.json"),
+    CopyDir(src: "{{workdir}}", dst: "{{trial_dir}}/workdir.tar.gz", archive: true),
+    ResultCollector(command: "GEN_BLOCK_COVERAGE=1 fuzzer/hail-fuzz", dst: "{{trial_dir}}/coverage.json"),
+]
+)
+{% endwith %}

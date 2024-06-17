@@ -1,0 +1,10 @@
+{%- include "arm_binaries" %}
+[
+{%- for binary in binaries %}
+    (
+        template: "multifuzz",
+        trials: [0,1,2,3,4],
+        config: {"bench":"multifuzz-all","fuzzer":"multifuzz","mode":"all","binary":"{{binary}}","duration":"24h"}
+    ),
+{%- endfor %}
+]

@@ -1,0 +1,72 @@
+vars = [
+    "INPUT_DIR=fuzzer/inputs",
+    "ICICLE_SYSROOT=fuzzer/sysroots/{arch}",
+    "GHIDRA_SRC=fuzzer/ghidra",
+    "ICICLE_LOG=error",
+    "RUST_BACKTRACE=1",
+]
+
+[templates]
+arm_binaries = "./config/arm-binaries.jinja"
+multifuzz = "./config/multifuzz.ron.jinja"
+
+[images.rootfs]
+kind = "docker"
+tag = "worker-rootfs"
+build_path = "."
+copy = ["bin", "etc", "lib", "lib64", "root", "sbin", "usr"]
+create_dirs = ["boot", "dev", "proc", "run", "sys", "var", "fuzzer", "tmp"]
+size = 409_600_000
+
+[images.empty]
+kind = "host"
+paths = []
+size = 100_000_000
+
+[images.hail-fuzz]
+kind = "host"
+paths = [
+    # Benchmark targets
+    { dst = "targets/.", src = "../benchmarks/." },
+    # Emulator
+    { dst = ".", src = "../MultiFuzz/target/release/hail-fuzz" },
+    { dst = "ghidra/Ghidra/Processors/ARM/data", src = "../MultiFuzz/ghidra/Ghidra/Processors/ARM/data/languages" },
+]
+
+[firecracker]
+url = "https://github.com/firecracker-microvm/firecracker/releases/download/v1.3.1/firecracker-v1.3.1-x86_64.tgz:firecracker-v1.3.1-x86_64"
+sha256 = "755f7b37193d8fb8628610fe16d997c14eb58fe54b04488052d9c7956009a214"
+
+[firecracker.kernel]
+url = "https://github.com/mchesser/linux/releases/download/4.20/vmlinux"
+sha256 = "266f527579751cb87f14d69b6c4b09a151557eaa1f509f50ae994f6ade8b17af"
+boot_args = """
+console=ttyS0 reboot=k panic=1 loglevel=3 \
+fsck.mode=skip random.trust_cpu=on \
+i8042.noaux i8042.nomux i8042.nopnp \
+align_va_addr=64 mitigations=off"""
+entropy = [
+    0x325f469a, 0x3c20b2d7, 0x7dad2568, 0x00aca3d3,
+    0x3daa8f93, 0x1ac74e28, 0x46566718, 0x9e2b99b3,
+    0x6cf9d44d, 0xad5fc671, 0x400fea73, 0x34d50c34,
+    0x96d7df1b, 0x706f937f, 0x952660f9, 0x1fe41df9,
+]
+
+[instances.hail-fuzz]
+boot_delay_sec = 2
+machine = { smt = false, mem_size_mib = 8192, vcpu_count = 1 }
+rootfs = { name = "rootfs", image = "rootfs", mount_as = "read_only" }
+drives = [
+    { name = "fuzzer", image = "hail-fuzz", mount_as = "read_only" },
+    { name = "var", image = "empty", mount_as = "duplicate" },
+]
+
+[docker.hail-fuzz]
+build_path = "."
+mount = [
+    { name = "/fuzzer", image = "hail-fuzz", mount_as = "read_only" },
+]
+
+[local_worker]
+agent_path = "./target/release/agent"
+workdir = "./local_worker"

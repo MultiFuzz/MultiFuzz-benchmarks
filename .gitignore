@@ -1,0 +1,5 @@
+workdir*
+trace.txt
+bench-harness/output
+bench-harness/.harness-cache
+**/target

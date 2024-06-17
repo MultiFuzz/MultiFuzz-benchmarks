@@ -1,0 +1,12 @@
+[package]
+name = "plot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+plotters = { workspace = true }
+polars = { workspace = true }
+plot-data = { path = "../plot-data" }
+mimalloc = { workspace = true }
+indexmap = { workspace = true }

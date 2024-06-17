@@ -1,0 +1,4 @@
+[workspace]
+resolver = "2"
+members = ["agent", "agent-interface", "bench-harness"]
+default-members = ["bench-harness"]

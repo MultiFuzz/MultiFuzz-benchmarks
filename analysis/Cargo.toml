@@ -1,0 +1,52 @@
+[workspace]
+members = ["plot-data", "plot"]
+default-members = ["plot", "plot-data"]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = { version = "1.0.80", features = ["backtrace"] }
+glob = "0.3.1"
+plotters = { git = "https://github.com/mchesser/plotters", default-features = false, features = [
+    "svg_backend",
+    "line_series",
+    "area_series",
+    "point_series",
+    "ttf",
+] }
+polars = { version = "0.40.0", features = [
+    "log",
+    "lazy",
+    "serde",
+    "serde-lazy",
+    "json",
+    "partition_by",
+    "strings",
+    "concat_str",
+    "regex",
+    "dtype-struct",
+    "dtype-categorical",
+    "diagonal_concat",
+    "string_to_integer",
+    "pivot",
+    "is_in",
+    "dynamic_group_by",
+    "cum_agg",
+    "asof_join",
+    "round_series",
+    "dot_diagram",
+    "cse",
+    "rank",
+    "list_eval",
+] }
+polars-plan = "0.40.0"
+regex = "1.10.3"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+ron = "0.8.1"
+indexmap = "2.2.5"
+mimalloc = { version = "*", default-features = false }
+once_cell = "1.19.0"
+libm = "0.2.8"
+
+[profile.release]
+incremental = true

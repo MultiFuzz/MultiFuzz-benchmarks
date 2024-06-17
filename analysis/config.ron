@@ -1,0 +1,155 @@
+(
+    coverage_metadata: Some(MetadataSource(
+         block_maps: {
+            "CNC": "./metadata/CNC.json",
+            "Console": "./metadata/Console.json",
+            "Drone": "./metadata/Drone.json",
+            "Gateway": "./metadata/Gateway.json",
+            "Heat_Press": "./metadata/Heat_Press.json",
+            "PLC": "./metadata/PLC.json",
+            "Reflow_Oven": "./metadata/Reflow_Oven.json",
+            "Robot": "./metadata/Robot.json",
+            "Soldering_Iron": "./metadata/Soldering_Iron.json",
+            "Steering_Control": "./metadata/Steering_Control.json",
+
+            "uEmu.3Dprinter": "./metadata/uEmu.3Dprinter.json",
+            "6LoWPAN_Sender": "./metadata/6LoWPAN_Sender.json",
+            "uEmu.GPSTracker": "./metadata/uEmu.GPSTracker.json",
+            "LiteOS_IoT": "./metadata/LiteOS_IoT.json",
+            "RF_Door_Lock": "./metadata/RF_Door_Lock.json",
+            "Thermostat": "./metadata/Thermostat.json",
+            "utasker_MODBUS": "./metadata/utasker_MODBUS.json",
+            "utasker_USB": "./metadata/utasker_USB.json",
+            "XML_Parser": "./metadata/XML_Parser.json",
+            "Zepyhr_SocketCan": "./metadata/Zepyhr_SocketCan.json",
+
+            "riot-ccn-lite-relay": "./metadata/riot-ccn-lite-relay.json",
+            "riot-filesystem": "./metadata/riot-filesystem.json",
+            "riot-gnrc_networking": "./metadata/riot-gnrc_networking.json",
+        },
+    )),
+
+    // MultiFuzz test
+    plot_layout: (
+        cell_size: (width: 250, height: 220),
+        // cell_size: (width: 160, height: 180),
+        max_columns: 5,
+        min_size: (width: 800, height: 300),
+    ),
+
+    data: {
+        "Fuzzware": [
+            (
+                source: FuzzwareBlocksCsv(glob: "../fuzzware-experiments/02-comparison-with-state-of-the-art/*/*/*_covered_bbs_by_second_into_experiment.csv"),
+                filter: Neq(Col("binary"), Str("6LoWPAN_Receiver")), // Same as 6LoWPAN_Sender
+            ),
+        ],
+
+        "Ember-IO": [
+            (
+                source: EmberCsv(glob: "../ember-new/*.csv"),
+                filter: Neq(Col("binary"), Str("6LoWPAN_Receiver")),
+            )
+        ],
+
+        "MultiFuzz (Extend Only)": [
+            (source: MultiFuzzBench(glob: "../bench-harness/output/multifuzz-ext/multifuzz*/*/*/*/coverage.json")),
+        ],
+        "MultiFuzz (Extend+Havoc)": [
+            (source: MultiFuzzBench(glob: "../bench-harness/output/multifuzz-havoc/multifuzz*/*/*/*/coverage.json")),
+        ],
+        "MultiFuzz (Extend+Havoc+Trim)": [
+            (source: MultiFuzzBench(glob: "../bench-harness/output/multifuzz-trim/multifuzz*/*/*/*/coverage.json")),
+        ],
+        "MultiFuzz (Extend+Havoc+Trim+I2S)": [
+            (source: MultiFuzzBench(glob: "../bench-harness/output/multifuzz-i2s/multifuzz*/*/*/*/coverage.json")),
+        ],
+        "MultiFuzz": [
+            (source: MultiFuzzBench(glob: "../bench-harness/output/multifuzz-all/multifuzz*/*/*/*/coverage.json")),
+        ],
+
+        // Plots for the output of
+        //
+        // "MultiFuzz(Extend Only)": [
+        //     (source: MultiFuzzBench(glob: "../bench-harness/output/debug-ext/multifuzz*/*/*/*/coverage.json")),
+        // ],
+        // "MultiFuzz(Extend+Havoc)": [
+        //     (source: MultiFuzzBench(glob: "../bench-harness/output/debug-havoc/multifuzz*/*/*/*/coverage.json")),
+        // ],
+        // "MultiFuzz(Extend+Havoc+Trim)": [
+        //     (source: MultiFuzzBench(glob: "../bench-harness/output/debug-trim/multifuzz*/*/*/*/coverage.json")),
+        // ],
+        // "MultiFuzz(Extend+Havoc+Trim+I2S)": [
+        //     (source: MultiFuzzBench(glob: "../bench-harness/output/debug-i2s/multifuzz*/*/*/*/coverage.json")),
+        // ],
+        // "MultiFuzz": [
+        //     (source: MultiFuzzBench(glob: "../bench-harness/output/debug-all/multifuzz*/*/*/*/coverage.json")),
+        // ],
+
+    },
+    time_resolution: 200,
+    trials: 5,
+    reference: "MultiFuzz",
+
+    bug_exploit: ["Heat_Press", "PLC", "Soldering_Iron", "RF_Door_Lock", "Thermostat", "Gateway"],
+
+    legend_mapping: {
+        "Fuzzware": 0,
+        "Ember-IO": 1,
+        "MultiFuzz": 2,
+        "MultiFuzz (Extend Only)": 1,
+        "Extend Only": 1,
+        "MultiFuzz (Extend+Havoc)": 3,
+        "Extend+Havoc": 3,
+        "MultiFuzz (Extend+Havoc+Trim)": 4,
+        "Extend+Havoc+Trim": 4,
+    },
+
+    // Drone:
+    // survival: {
+    //     "Drone: MPU9250_Init()": (binary: "Drone", start: 0x8002ea0, end: 0x8002ea6),
+    //     "Drone: AK8963_Init()":  (binary: "Drone", start: 0x8002ea6, end: 0x8002eaa),
+    //     "Drone: MS5611_Init()": (binary: "Drone", start: 0x8003298, end: 0x800418a),
+    // },
+    // survival_plot_max_hours: 4.0,
+    // survival_layout: (
+    //     cell_size: (width: 250, height: 140),
+    //     min_size: (width: 600, height: 200)
+    // ),
+    // survival_layout: (
+    //     cell_size: (width: 200, height: 130),
+    //     max_columns: 2,
+    //     min_size: (width: 400, height: 200)
+    // ),
+
+    // Gateway:
+    // survival: {
+    //     // "1. Valid SYSEX message":  (binary: "Gateway", start: 0x8003478, end: 0x80033d0),
+    //     "Gateway: SYSEX 'q'": (binary: "Gateway", start: 0x80033d0, end: 0x800341a),
+    //     "Gateway: SYSEX 'y'": (binary: "Gateway", start: 0x80033d0, end: 0x80033e0),
+    // },
+    // survival_plot_max_hours: 24.0,
+    // survival_layout: (
+    //     cell_size: (width: 200, height: 130),
+    //     max_columns: 2,
+    //     min_size: (width: 400, height: 200)
+    // ),
+    // survival_layout: (
+    //     cell_size: (width: 250, height: 140),
+    //     max_columns: 1,
+    //     min_size: (width: 400, height: 200)
+    // ),
+
+    // Console:
+    survival: {
+        "Console: 'help'": (binary: "Console", start: 0x2a10, end: 0x3544),
+        "Console: 'ps'": (binary: "Console", start: 0x2a10, end: 0x2ebc),
+        "Console: 'rtc'": (binary: "Console", start: 0x2a10, end: 0x2ebc),
+    },
+    survival_plot_max_hours: 24.0,
+    survival_layout: (
+        cell_size: (width: 200, height: 130),
+        max_columns: 2,
+        min_size: (width: 400, height: 200)
+    ),
+)

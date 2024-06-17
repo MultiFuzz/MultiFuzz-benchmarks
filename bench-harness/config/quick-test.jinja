@@ -1,0 +1,10 @@
+{%- include "arm_binaries" %}
+[
+{%- for binary in binaries %}
+    (template: "multifuzz", trials: [0], config: {"bench":"debug-extend","fuzzer":"multifuzz","mode":"extend","binary":"{{binary}}","duration":"10s"}),
+    (template: "multifuzz", trials: [0], config: {"bench":"debug-havoc","fuzzer":"multifuzz","mode":"extend+havoc","binary":"{{binary}}","duration":"10s"}),
+    (template: "multifuzz", trials: [0], config: {"bench":"debug-trim","fuzzer":"multifuzz","mode":"extend+havoc+trim","binary":"{{binary}}","duration":"10s"}),
+    (template: "multifuzz", trials: [0], config: {"bench":"debug-i2s","fuzzer":"multifuzz","mode":"extend+havoc+trim+i2s","binary":"{{binary}}","duration":"10s"}),
+    (template: "multifuzz", trials: [0], config: {"bench":"debug-all","fuzzer":"multifuzz","mode":"all","binary":"{{binary}}","duration":"10s"}),
+{%- endfor %}
+]
