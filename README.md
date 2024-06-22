@@ -27,8 +27,10 @@ First, ensure that the current user has access to Docker and following dependenc
 On a Ubuntu 22.04 server this can be done by running the following commands:
 
 ```bash
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+. "$HOME/.cargo/env"
 sudo apt update
-sudo apt install -y cargo clang docker libssl-dev pkg-config
+sudo apt install -y clang docker libssl-dev pkg-config libfontconfig-dev
 sudo usermod -aG docker $USER
 newgrp docker
 ```
