@@ -64,6 +64,7 @@ Note: GDB does not automatically update after running a monitor command, so runn
 | [utasker_USB][usb]        | [(FP) Out-of-bounds access in `fnUSB_handle_frame` from `GRXSTSPR.CHNUM` value][usb_bug_1]
 | [utasker_USB][usb]        | [Out-of-bounds access from interface index in `control_callback`][usb_bug_2]
 | [utasker_USB][usb]        | [(FP) Uninitialized usage of `SerialHandle`][usb_bug_3]
+| [utasker_USB][usb]        | [Direct manipulation of memory using I/O menu][usb_bug_4]
 | [Zephyr_SocketCan][zepyhr]| [`canbus` subcommands fail to validate argument count][zepyhr_bug_2]
 | [Zephyr_SocketCan][zepyhr]| [(FP) Out-of-bounds write in `can_stm32_attach`][zepyhr_bug_3]
 | [Zephyr_SocketCan][zepyhr]| [Incorrect comparison used for bounds check in `execute`][zepyhr_bug_4]
@@ -106,6 +107,7 @@ Note: GDB does not automatically update after running a monitor command, so runn
 [fw_bug_45]: https://github.com/fuzzware-fuzzer/fuzzware-experiments/tree/main/04-crash-analysis/45
 [usb_bug_2]: #out-of-bounds-access-from-interface-index-in-control_callback
 [usb_bug_3]: #uninitialized-usage-of-serialhandle-false-positive-1
+[usb_bug_4]: #direct-manipulation-of-memory-using-io-menu-1
 
 [zepyhr]: #Zepyhr_SocketCan
 [zepyhr_bug_0]: #unchecked-error-handler-in-z_impl_can_attach_msgq
@@ -666,6 +668,23 @@ UnhandledException(code=WriteUnmapped, value=0x1000):
 
 This is a false positive only because only interrupts for endpoint 0 are enabled. `OTG_FS_DOEPINT0` is configured at `0x0800de9c` (part of `fnConfigUSB`).
 
+## Direct manipulation of memory using I/O menu
+
+This bug is similar to the [equivalent bug](#direct-manipulation-of-memory-using-io-menu) in uTasker MODBUS, however the fuzzer must generate an input that does not crash as a result of one of the USB related issues.
+
+Replay: `./replay.sh crashes/utasker_USB/usb_storage_display`
+
+In the provided replay file, the firmware crashes after running a `sd` (Storage display) command.
+
+```
+UnhandledException(code=ReadUnmapped, value=0x527e) (icount = 3056270), active_irq = 0
+0x000800f76a: uMemcpy at uTasker\Driver.c:1284.9
+0x0008012b3a: fnDoCommand at Applications\uTaskerV1.4\debug.c:7807.9
+0x0008013668: fnDoDebug at Applications\uTaskerV1.4\debug.c:7914.17
+0x00080122e2: fnApplication at Applications\uTaskerV1.4\application.c:1221.17
+0x000800ea72: uTaskerSchedule at uTasker\uTasker.c:401.13
+0x000800c214: main at Hardware\STM32\STM32.c:410.9
+```
 
 ## Zephyr SocketCAN
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $# -neq 0 ]]; then
+if [[ ! $# -eq 0 ]]; then
     export WORKERS=$1
 fi
 
